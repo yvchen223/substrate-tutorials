@@ -51,28 +51,32 @@ pub mod pallet {
 		// on_initialize() will be called at the beginning of each new block, before anything
 		fn on_initialize(n: T::BlockNumber) -> Weight {
 			let mut used_weight = 0;
-			// TODO: get the reminders for the block `n`
-			let reminders: Vec<Vec<u8>> = Vec::new();
+			// get the reminders for the block `n`
+			let reminders = Reminders::<T>::get(n);
 			// this is an example of how do we get system weights for read and writes.
 			// you only have to mesure read and writes for this exercice !
 			//
 			// try to do this hook in one read and two writes !
-			used_weight += T::DbWeight::get().reads(1);
+			used_weight += T::DbWeight::get().reads_writes(1, 2);
 
-			// TODO:
 			// find a way to count events for this block, and put the total in the
 			// corresponding storage
 
+			EventCounter::<T>::set(reminders.len() as u32);
+
 			for reminder in reminders {
-				// TODO: now, emit a `Reminder` event for each events"
+				// now, emit a `Reminder` event for each events"
+				Self::deposit_event(Event::Reminder(reminder));
 			}
 
-			// TODO: clean the storage, a.k remove the events, after emitting them
+			// clean the storage, a.k remove the events, after emitting them
+			Reminders::<T>::remove(n);
 			used_weight
 		}
 
 		fn on_finalize(_: T::BlockNumber) {
-			// TODO: emit a `RemindersExecutes` event, with the right value
+			// emit a `RemindersExecutes` event, with the right value
+			Self::deposit_event(Event::RemindersExecuteds(Self::event_counter()));
 		}
 	}
 
