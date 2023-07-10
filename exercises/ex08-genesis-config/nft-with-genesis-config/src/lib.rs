@@ -53,6 +53,24 @@ pub mod pallet {
 			// iterate over the `GenesisAssetList` and:
 			// 1) mint each asset
 			// 2) transfer the correct amount of this asset to each account in the inner vec
+			self.genesis_asset_list.iter().for_each(|(account_id, metadata, supply, v)| {
+				Pallet::<T>::inner_mint(
+					account_id.clone(),
+					metadata.clone().try_into().unwrap(),
+					supply.clone(),
+				)
+				.unwrap();
+				let asset_id = Pallet::<T>::nonce() - 1;
+				v.iter().for_each(|(recipient, amount)| {
+					Pallet::<T>::inner_transfer(
+						asset_id,
+						account_id.clone(),
+						recipient.clone(),
+						amount.clone(),
+					)
+					.unwrap();
+				});
+			});
 		}
 	}
 
